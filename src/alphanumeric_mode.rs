@@ -2,9 +2,6 @@ use bitstream_io::{BigEndian, BitRead, BitReader, BitWrite, BitWriter};
 
 #[derive(Debug)]
 pub enum EncodingError {
-    EmptyInput,
-    InvalidCharacter(char),
-    InputTooLong,
     IoError(std::io::Error),
 }
 
@@ -31,21 +28,7 @@ fn get_alphanumeric_value(c: char) -> Option<u8> {
     }
 }
 
-pub fn encode_alphanumeric(input: &str) -> Result<Vec<u8>, EncodingError> {
-    if input.is_empty() {
-        return Err(EncodingError::EmptyInput);
-    }
-
-    if input.len() > 21 {
-        return Err(EncodingError::InputTooLong);
-    }
-
-    for c in input.chars() {
-        if get_alphanumeric_value(c).is_none() {
-            return Err(EncodingError::InvalidCharacter(c));
-        }
-    }
-
+pub fn encode(input: &str) -> Result<Vec<u8>, EncodingError> {
     let mut result = Vec::new();
     let mut writer = BitWriter::endian(&mut result, BigEndian);
 
@@ -113,41 +96,8 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_max_length() {
-        // Test maximum length (21 characters)
-        let max_input = "A".repeat(21);
-        assert!(encode_alphanumeric(&max_input).is_ok());
-    }
-
-    #[test]
-    fn test_over_max_length() {
-        // Test one over maximum length
-        let too_long = "A".repeat(22);
-        assert!(matches!(
-            encode_alphanumeric(&too_long),
-            Err(EncodingError::InputTooLong)
-        ));
-    }
-
-    #[test]
-    fn test_empty_input() {
-        assert!(matches!(
-            encode_alphanumeric(""),
-            Err(EncodingError::EmptyInput)
-        ));
-    }
-
-    #[test]
-    fn test_invalid_character() {
-        assert!(matches!(
-            encode_alphanumeric("hello"),
-            Err(EncodingError::InvalidCharacter('h'))
-        ));
-    }
-
-    #[test]
     fn test_basic_encoding() {
-        let result = encode_alphanumeric("HELLO").unwrap();
+        let result = encode("HELLO").unwrap();
         assert_eq!(result.len(), 16);
 
         // First byte should be 001 for mode, then 00101 for length 5
@@ -161,7 +111,7 @@ mod tests {
     #[test]
     fn test_ac42_encoding() {
         let input = "AC-42";
-        let result = encode_alphanumeric(input).unwrap();
+        let result = encode(input).unwrap();
 
         // Expected encoding according to spec:
         // Mode indicator: 001 (3 bits)
@@ -220,7 +170,7 @@ mod tests {
     fn test_partial_terminator() {
         // 20 chars = 3 + 5 + (10 * 11) = 118 bits
         // Leaves 10 bits: 9-bit terminator + 1 padding bit
-        let result = encode_alphanumeric("12345678901234567890").unwrap();
+        let result = encode("12345678901234567890").unwrap();
 
         let mut cursor = std::io::Cursor::new(&result);
         let mut reader = BitReader::endian(&mut cursor, BigEndian);
@@ -240,7 +190,7 @@ mod tests {
     #[test]
     fn test_truncated_terminator() {
         let input = "ABCDEFGHIJKLMNOPQRSTU"; // 21 chars
-        let result = encode_alphanumeric(input).unwrap();
+        let result = encode(input).unwrap();
 
         // Calculate bit usage:
         // Mode indicator:    3 bits
@@ -318,7 +268,7 @@ mod tests {
         // Test individual character values
         for (input_char, expected_value) in test_cases {
             let input = input_char.to_string();
-            let result = encode_alphanumeric(&input).unwrap();
+            let result = encode(&input).unwrap();
 
             let mut cursor = std::io::Cursor::new(&result);
             let mut reader = BitReader::endian(&mut cursor, BigEndian);
@@ -349,7 +299,7 @@ mod tests {
         ];
 
         for (pair, expected_value) in test_pairs {
-            let result = encode_alphanumeric(pair).unwrap();
+            let result = encode(pair).unwrap();
 
             let mut cursor = std::io::Cursor::new(&result);
             let mut reader = BitReader::endian(&mut cursor, BigEndian);
@@ -395,7 +345,7 @@ mod tests {
         ];
 
         for (input, expected_values) in test_cases {
-            let result = encode_alphanumeric(input).unwrap();
+            let result = encode(input).unwrap();
 
             let mut cursor = std::io::Cursor::new(&result);
             let mut reader = BitReader::endian(&mut cursor, BigEndian);

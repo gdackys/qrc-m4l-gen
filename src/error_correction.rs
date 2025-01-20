@@ -1,15 +1,6 @@
 use crate::gf_256::GF256;
 
-// error correction for M4-L symbols require 8 codewords
-// const NUMBER_OF_CODEWORDS: usize = 5;
-
-// const GEN_COEFFS: [u8; 6] = [0x01, 0x1f, 0xc6, 0x3f, 0x93, 0x74];
-
-// const GEN_COEFFS: [u8; 9] = [0x01, 0xff, 0x0b, 0x51, 0x36, 0xef, 0xad, 0xc8, 0x18];
-
-// static GF_256: GF256 = GF256::new();
-
-pub fn calculate_error_correction(
+pub fn calculate_codewords(
     encoded_input: &[u8],
     coefficients: &[u8],
     galois_field: &GF256,
@@ -42,7 +33,7 @@ mod tests {
 
     #[test]
     fn test_5_codewords() {
-        let result = calculate_error_correction(
+        let result = calculate_codewords(
             // input fully encoded in numeric mode
             &[0b01000000, 0b00011000, 0b10101100, 0b11000011, 0b00000000],
             // precomputed generator coefficients for 5 codewords
@@ -62,7 +53,7 @@ mod tests {
 
     #[test]
     fn test_10_codewords() {
-        let result = calculate_error_correction(
+        let result = calculate_codewords(
             &[
                 0b00010000, 0b00100000, 0b00001100, 0b01010110, 0b01100001, 0b10000000, 0b11101100,
                 0b00010001, 0b11101100, 0b00010001, 0b11101100, 0b00010001, 0b11101100, 0b00010001,
