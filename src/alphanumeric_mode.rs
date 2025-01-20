@@ -1,16 +1,5 @@
 use bitstream_io::{BigEndian, BitRead, BitReader, BitWrite, BitWriter};
 
-#[derive(Debug)]
-pub enum EncodingError {
-    IoError(std::io::Error),
-}
-
-impl From<std::io::Error> for EncodingError {
-    fn from(error: std::io::Error) -> Self {
-        EncodingError::IoError(error)
-    }
-}
-
 fn get_alphanumeric_value(c: char) -> Option<u8> {
     match c {
         '0'..='9' => Some(c as u8 - b'0'),
@@ -28,7 +17,7 @@ fn get_alphanumeric_value(c: char) -> Option<u8> {
     }
 }
 
-pub fn encode(input: &str) -> Result<Vec<u8>, EncodingError> {
+pub fn encode(input: &str) -> Result<Vec<u8>, std::io::Error> {
     let mut result = Vec::new();
     let mut writer = BitWriter::endian(&mut result, BigEndian);
 
