@@ -1,4 +1,4 @@
-use bitstream_io::{BigEndian, BitRead, BitReader, BitWrite, BitWriter};
+use bitstream_io::{BigEndian, BitWrite, BitWriter};
 
 fn get_alphanumeric_value(c: char) -> Option<u8> {
     match c {
@@ -83,6 +83,7 @@ pub fn encode(input: &str) -> Result<Vec<u8>, std::io::Error> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use bitstream_io::{BigEndian, BitRead, BitReader};
 
     #[test]
     fn test_basic_encoding() {
