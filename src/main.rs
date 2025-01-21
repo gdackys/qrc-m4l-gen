@@ -5,7 +5,9 @@ mod error_correction;
 mod gf_256;
 mod mask_pattern;
 
+use code_matrix::CodeMatrix;
 use gf_256::GF256;
+use mask_pattern::MaskPattern;
 
 const ERR_CORRECTION_CODEWORDS: usize = 8;
 const GEN_COEFFS: [u8; 9] = [0x01, 0xff, 0x0b, 0x51, 0x36, 0xef, 0xad, 0xc8, 0x18];
@@ -17,7 +19,10 @@ fn main() {
     let encoded_data = encode_data(data);
     let ec_codewords = gen_ec_codewords(&encoded_data, &gf_256);
     let data_codewords = combine_data(&encoded_data, &ec_codewords);
-    let _code_matrix = code_matrix::CodeMatrix::with_data(&data_codewords);
+
+    let code_matrix = CodeMatrix::with_data(&data_codewords);
+
+    // let mask_pattern = MaskPattern::pattern_for(code_matrix);
 }
 
 fn encode_data(data: &str) -> Vec<u8> {

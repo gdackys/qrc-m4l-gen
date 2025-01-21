@@ -1,5 +1,5 @@
 pub trait BitBlock {
-    fn value_at(&self, y: usize, x: usize) -> u8;
+    fn read(&self, y: usize, x: usize) -> u8;
 }
 
 pub struct UpwardsBlock {
@@ -7,7 +7,7 @@ pub struct UpwardsBlock {
 }
 
 impl BitBlock for UpwardsBlock {
-    fn value_at(&self, y: usize, x: usize) -> u8 {
+    fn read(&self, y: usize, x: usize) -> u8 {
         self.data[y][x]
     }
 }
@@ -30,7 +30,7 @@ pub struct DownwardsBlock {
 }
 
 impl BitBlock for DownwardsBlock {
-    fn value_at(&self, y: usize, x: usize) -> u8 {
+    fn read(&self, y: usize, x: usize) -> u8 {
         self.data[y][x]
     }
 }
@@ -56,27 +56,27 @@ mod tests {
     fn test_upwards_block() {
         let block = UpwardsBlock::new(0b10101010);
 
-        assert_eq!(block.value_at(3, 1), 1);
-        assert_eq!(block.value_at(3, 0), 0);
-        assert_eq!(block.value_at(2, 1), 1);
-        assert_eq!(block.value_at(2, 0), 0);
-        assert_eq!(block.value_at(1, 1), 1);
-        assert_eq!(block.value_at(1, 0), 0);
-        assert_eq!(block.value_at(0, 1), 1);
-        assert_eq!(block.value_at(0, 0), 0);
+        assert_eq!(block.read(3, 1), 1);
+        assert_eq!(block.read(3, 0), 0);
+        assert_eq!(block.read(2, 1), 1);
+        assert_eq!(block.read(2, 0), 0);
+        assert_eq!(block.read(1, 1), 1);
+        assert_eq!(block.read(1, 0), 0);
+        assert_eq!(block.read(0, 1), 1);
+        assert_eq!(block.read(0, 0), 0);
     }
 
     #[test]
     fn test_downwards_block() {
         let block = DownwardsBlock::new(0b10101010);
 
-        assert_eq!(block.value_at(0, 1), 1);
-        assert_eq!(block.value_at(0, 0), 0);
-        assert_eq!(block.value_at(1, 1), 1);
-        assert_eq!(block.value_at(1, 0), 0);
-        assert_eq!(block.value_at(2, 1), 1);
-        assert_eq!(block.value_at(2, 0), 0);
-        assert_eq!(block.value_at(3, 1), 1);
-        assert_eq!(block.value_at(3, 0), 0);
+        assert_eq!(block.read(0, 1), 1);
+        assert_eq!(block.read(0, 0), 0);
+        assert_eq!(block.read(1, 1), 1);
+        assert_eq!(block.read(1, 0), 0);
+        assert_eq!(block.read(2, 1), 1);
+        assert_eq!(block.read(2, 0), 0);
+        assert_eq!(block.read(3, 1), 1);
+        assert_eq!(block.read(3, 0), 0);
     }
 }

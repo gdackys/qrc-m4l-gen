@@ -16,7 +16,7 @@ impl MaskPattern {
         for i in 0..17 {
             for j in 0..17 {
                 if i % 2 == 0 {
-                    pattern.set(i, j, 1);
+                    pattern.write(i, j, 1);
                 }
             }
         }
@@ -30,7 +30,7 @@ impl MaskPattern {
         for i in 0..17 {
             for j in 0..17 {
                 if ((i / 2) + (j / 3)) % 2 == 0 {
-                    pattern.set(i, j, 1);
+                    pattern.write(i, j, 1);
                 }
             }
         }
@@ -44,7 +44,7 @@ impl MaskPattern {
         for i in 0..17 {
             for j in 0..17 {
                 if ((i * j) % 2 + (i * j) % 3) % 2 == 0 {
-                    pattern.set(i, j, 1);
+                    pattern.write(i, j, 1);
                 }
             }
         }
@@ -58,7 +58,7 @@ impl MaskPattern {
         for i in 0..17 {
             for j in 0..17 {
                 if ((i + j) % 2 + (i * j) % 3) % 2 == 0 {
-                    pattern.set(i, j, 1);
+                    pattern.write(i, j, 1);
                 }
             }
         }
@@ -66,18 +66,24 @@ impl MaskPattern {
         pattern
     }
 
-    pub fn set(&mut self, y: usize, x: usize, value: u8) {
-        self.data[y][x] = value;
+    pub fn read(&self, y: usize, x: usize) -> u8 {
+        self.data[y][x]
     }
 
-    pub fn get_row(&self, y: usize) -> &[u8] {
-        &self.data[y]
+    pub fn write(&mut self, y: usize, x: usize, value: u8) {
+        self.data[y][x] = value;
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    impl MaskPattern {
+        pub fn get_row(&self, y: usize) -> &[u8] {
+            &self.data[y]
+        }
+    }
 
     #[test]
     fn test_pattern_00() {

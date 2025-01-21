@@ -1,41 +1,75 @@
 use crate::bit_block::{BitBlock, DownwardsBlock, UpwardsBlock};
+use crate::mask_pattern::MaskPattern;
 
 pub struct CodeMatrix {
     data: [[u8; 17]; 17],
 }
 
 impl CodeMatrix {
-    pub fn new() -> Self {
+    fn new() -> Self {
         Self {
-            data: [
-                [1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1],
-                [1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                [1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                [1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                [1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                [1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                [1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            ],
+            data: [[0; 17]; 17],
         }
+    }
+
+    fn init(&mut self) {
+        self.data = [
+            [1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1],
+            [1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        ]
+    }
+
+    pub fn apply_mask(&self, mask_pattern: &MaskPattern) -> Self {
+        let mut matrix = self.clone();
+
+        for i in 0..17 {
+            for j in 0..17 {
+                if i > 8 && j > 8 {
+                    matrix.data[i][j] ^= mask_pattern.read(i, j);
+                }
+            }
+        }
+
+        matrix
+    }
+
+    fn clone(&self) -> Self {
+        let mut instance = Self::new();
+
+        for i in 0..17 {
+            for j in 0..17 {
+                instance.copy(i, j, self);
+            }
+        }
+
+        instance
     }
 
     pub fn with_data(data: &[u8]) -> Self {
         let mut matrix = Self::new();
+
+        matrix.init();
         matrix.place_data(data);
+
         matrix
     }
 
-    pub fn place_data(&mut self, data: &[u8]) {
+    fn place_data(&mut self, data: &[u8]) {
         self.place_block(&UpwardsBlock::new(data[0]), 13, 15);
         self.place_block(&UpwardsBlock::new(data[1]), 9, 15);
         self.place_block(&UpwardsBlock::new(data[2]), 5, 15);
@@ -72,9 +106,21 @@ impl CodeMatrix {
     fn place_block(&mut self, block: &impl BitBlock, y: usize, x: usize) {
         for i in 0..4 {
             for j in 0..2 {
-                self.data[y + i][x + j] = block.value_at(i, j);
+                self.write(y + i, x + j, block.read(i, j));
             }
         }
+    }
+
+    fn copy(&mut self, y: usize, x: usize, other: &Self) {
+        self.write(y, x, other.read(y, x));
+    }
+
+    fn read(&self, y: usize, x: usize) -> u8 {
+        self.data[y][x]
+    }
+
+    fn write(&mut self, y: usize, x: usize, value: u8) {
+        self.data[y][x] = value;
     }
 }
 
@@ -83,10 +129,38 @@ mod tests {
     use super::*;
     use crate::bit_block::UpwardsBlock;
 
-    impl CodeMatrix {
-        fn value_at(&self, y: usize, x: usize) -> u8 {
-            self.data[y][x]
-        }
+    #[test]
+    fn test_apply_mask() {
+        let mut matrix = CodeMatrix::new();
+
+        // Initialize some known data in the matrix
+        matrix.init();
+
+        // Set some test values in the region that should be masked (i > 8, j > 8)
+        matrix.write(9, 9, 1);
+        matrix.write(10, 10, 0);
+        matrix.write(15, 15, 1);
+
+        // Create a test mask pattern with known values
+        let mut pattern = MaskPattern::new();
+
+        // Set corresponding test values in the mask pattern
+        pattern.write(9, 9, 1);
+        pattern.write(10, 10, 1);
+        pattern.write(15, 15, 0);
+
+        // Apply the mask
+        let masked_matrix = matrix.apply_mask(&pattern);
+
+        // Test that XOR was applied correctly in masked region (i > 8, j > 8)
+        assert_eq!(masked_matrix.read(9, 9), 0); // 1 XOR 1 = 0
+        assert_eq!(masked_matrix.read(10, 10), 1); // 0 XOR 1 = 1
+        assert_eq!(masked_matrix.read(15, 15), 1); // 1 XOR 0 = 1
+
+        // Test that data outside masked region remained unchanged
+        assert_eq!(masked_matrix.read(0, 0), matrix.read(0, 0));
+        assert_eq!(masked_matrix.read(7, 7), matrix.read(7, 7));
+        assert_eq!(masked_matrix.read(8, 8), matrix.read(8, 8));
     }
 
     #[test]
@@ -96,13 +170,13 @@ mod tests {
 
         matrix.place_block(&upwards_block, 13, 15);
 
-        assert_eq!(matrix.value_at(16, 16), 1);
-        assert_eq!(matrix.value_at(16, 15), 0);
-        assert_eq!(matrix.value_at(15, 16), 1);
-        assert_eq!(matrix.value_at(15, 15), 0);
-        assert_eq!(matrix.value_at(14, 16), 1);
-        assert_eq!(matrix.value_at(14, 15), 0);
-        assert_eq!(matrix.value_at(13, 16), 1);
-        assert_eq!(matrix.value_at(13, 15), 0);
+        assert_eq!(matrix.read(16, 16), 1);
+        assert_eq!(matrix.read(16, 15), 0);
+        assert_eq!(matrix.read(15, 16), 1);
+        assert_eq!(matrix.read(15, 15), 0);
+        assert_eq!(matrix.read(14, 16), 1);
+        assert_eq!(matrix.read(14, 15), 0);
+        assert_eq!(matrix.read(13, 16), 1);
+        assert_eq!(matrix.read(13, 15), 0);
     }
 }
