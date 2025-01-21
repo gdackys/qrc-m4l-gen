@@ -3,6 +3,7 @@ mod bit_block;
 mod code_matrix;
 mod error_correction;
 mod gf_256;
+mod mask_pattern;
 
 use gf_256::GF256;
 
