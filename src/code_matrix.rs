@@ -1,12 +1,13 @@
 use crate::bit_block::{BitBlock, DownwardsBlock, UpwardsBlock};
-use crate::mask_pattern::MaskPattern;
+use crate::data_mask::DataMask;
+use crate::pattern_scoring::PatternScoring;
 
 pub struct CodeMatrix {
     data: [[u8; 17]; 17],
 }
 
 impl CodeMatrix {
-    fn new() -> Self {
+    pub fn new() -> Self {
         Self {
             data: [[0; 17]; 17],
         }
@@ -34,13 +35,13 @@ impl CodeMatrix {
         ]
     }
 
-    pub fn apply_mask(&self, mask_pattern: &MaskPattern) -> Self {
+    pub fn with_data_mask(&self, data_mask: &DataMask) -> Self {
         let mut matrix = self.clone();
 
         for i in 0..17 {
             for j in 0..17 {
                 if i > 8 && j > 8 {
-                    matrix.data[i][j] ^= mask_pattern.read(i, j);
+                    matrix.data[i][j] ^= data_mask.read(i, j);
                 }
             }
         }
@@ -64,46 +65,46 @@ impl CodeMatrix {
         let mut matrix = Self::new();
 
         matrix.init();
-        matrix.place_data(data);
+        matrix.write_data(data);
 
         matrix
     }
 
-    fn place_data(&mut self, data: &[u8]) {
-        self.place_block(&UpwardsBlock::new(data[0]), 13, 15);
-        self.place_block(&UpwardsBlock::new(data[1]), 9, 15);
-        self.place_block(&UpwardsBlock::new(data[2]), 5, 15);
-        self.place_block(&UpwardsBlock::new(data[3]), 1, 15);
+    fn write_data(&mut self, data: &[u8]) {
+        self.write_block(&UpwardsBlock::new(data[0]), 13, 15);
+        self.write_block(&UpwardsBlock::new(data[1]), 9, 15);
+        self.write_block(&UpwardsBlock::new(data[2]), 5, 15);
+        self.write_block(&UpwardsBlock::new(data[3]), 1, 15);
 
-        self.place_block(&DownwardsBlock::new(data[4]), 1, 13);
-        self.place_block(&DownwardsBlock::new(data[5]), 5, 13);
-        self.place_block(&DownwardsBlock::new(data[6]), 9, 13);
-        self.place_block(&DownwardsBlock::new(data[7]), 13, 13);
+        self.write_block(&DownwardsBlock::new(data[4]), 1, 13);
+        self.write_block(&DownwardsBlock::new(data[5]), 5, 13);
+        self.write_block(&DownwardsBlock::new(data[6]), 9, 13);
+        self.write_block(&DownwardsBlock::new(data[7]), 13, 13);
 
-        self.place_block(&UpwardsBlock::new(data[8]), 13, 11);
-        self.place_block(&UpwardsBlock::new(data[9]), 9, 11);
-        self.place_block(&UpwardsBlock::new(data[10]), 5, 11);
-        self.place_block(&UpwardsBlock::new(data[11]), 1, 11);
+        self.write_block(&UpwardsBlock::new(data[8]), 13, 11);
+        self.write_block(&UpwardsBlock::new(data[9]), 9, 11);
+        self.write_block(&UpwardsBlock::new(data[10]), 5, 11);
+        self.write_block(&UpwardsBlock::new(data[11]), 1, 11);
 
-        self.place_block(&DownwardsBlock::new(data[12]), 1, 9);
-        self.place_block(&DownwardsBlock::new(data[13]), 5, 9);
-        self.place_block(&DownwardsBlock::new(data[14]), 9, 9);
-        self.place_block(&DownwardsBlock::new(data[15]), 13, 9);
+        self.write_block(&DownwardsBlock::new(data[12]), 1, 9);
+        self.write_block(&DownwardsBlock::new(data[13]), 5, 9);
+        self.write_block(&DownwardsBlock::new(data[14]), 9, 9);
+        self.write_block(&DownwardsBlock::new(data[15]), 13, 9);
 
-        self.place_block(&UpwardsBlock::new(data[16]), 13, 7);
-        self.place_block(&UpwardsBlock::new(data[17]), 9, 7);
+        self.write_block(&UpwardsBlock::new(data[16]), 13, 7);
+        self.write_block(&UpwardsBlock::new(data[17]), 9, 7);
 
-        self.place_block(&DownwardsBlock::new(data[18]), 9, 5);
-        self.place_block(&DownwardsBlock::new(data[19]), 13, 5);
+        self.write_block(&DownwardsBlock::new(data[18]), 9, 5);
+        self.write_block(&DownwardsBlock::new(data[19]), 13, 5);
 
-        self.place_block(&UpwardsBlock::new(data[20]), 13, 3);
-        self.place_block(&UpwardsBlock::new(data[21]), 9, 3);
+        self.write_block(&UpwardsBlock::new(data[20]), 13, 3);
+        self.write_block(&UpwardsBlock::new(data[21]), 9, 3);
 
-        self.place_block(&DownwardsBlock::new(data[22]), 9, 1);
-        self.place_block(&DownwardsBlock::new(data[23]), 13, 1);
+        self.write_block(&DownwardsBlock::new(data[22]), 9, 1);
+        self.write_block(&DownwardsBlock::new(data[23]), 13, 1);
     }
 
-    fn place_block(&mut self, block: &impl BitBlock, y: usize, x: usize) {
+    fn write_block(&mut self, block: &impl BitBlock, y: usize, x: usize) {
         for i in 0..4 {
             for j in 0..2 {
                 self.write(y + i, x + j, block.read(i, j));
@@ -119,8 +120,18 @@ impl CodeMatrix {
         self.data[y][x]
     }
 
-    fn write(&mut self, y: usize, x: usize, value: u8) {
+    pub fn write(&mut self, y: usize, x: usize, value: u8) {
         self.data[y][x] = value;
+    }
+}
+
+impl PatternScoring for CodeMatrix {
+    fn count_right_edge(&self) -> u8 {
+        self.data.iter().fold(0, |acc, &r| acc + r[16])
+    }
+
+    fn count_bottom_edge(&self) -> u8 {
+        self.data[16].iter().fold(0, |acc, &v| acc + v)
     }
 }
 
@@ -130,7 +141,7 @@ mod tests {
     use crate::bit_block::UpwardsBlock;
 
     #[test]
-    fn test_apply_mask() {
+    fn test_with_data_mask() {
         let mut matrix = CodeMatrix::new();
 
         // Initialize some known data in the matrix
@@ -142,7 +153,7 @@ mod tests {
         matrix.write(15, 15, 1);
 
         // Create a test mask pattern with known values
-        let mut pattern = MaskPattern::new();
+        let mut pattern = DataMask::new();
 
         // Set corresponding test values in the mask pattern
         pattern.write(9, 9, 1);
@@ -150,7 +161,7 @@ mod tests {
         pattern.write(15, 15, 0);
 
         // Apply the mask
-        let masked_matrix = matrix.apply_mask(&pattern);
+        let masked_matrix = matrix.with_data_mask(&pattern);
 
         // Test that XOR was applied correctly in masked region (i > 8, j > 8)
         assert_eq!(masked_matrix.read(9, 9), 0); // 1 XOR 1 = 0
@@ -164,11 +175,11 @@ mod tests {
     }
 
     #[test]
-    fn test_place_block() {
+    fn test_write_block() {
         let mut matrix = CodeMatrix::new();
         let upwards_block = UpwardsBlock::new(0b10101010);
 
-        matrix.place_block(&upwards_block, 13, 15);
+        matrix.write_block(&upwards_block, 13, 15);
 
         assert_eq!(matrix.read(16, 16), 1);
         assert_eq!(matrix.read(16, 15), 0);

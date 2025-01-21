@@ -1,13 +1,14 @@
 mod alphanumeric_mode;
 mod bit_block;
 mod code_matrix;
+mod data_mask;
 mod error_correction;
 mod gf_256;
-mod mask_pattern;
+mod pattern_scoring;
 
 use code_matrix::CodeMatrix;
+use data_mask::DataMask;
 use gf_256::GF256;
-use mask_pattern::MaskPattern;
 
 const ERR_CORRECTION_CODEWORDS: usize = 8;
 const GEN_COEFFS: [u8; 9] = [0x01, 0xff, 0x0b, 0x51, 0x36, 0xef, 0xad, 0xc8, 0x18];
@@ -21,8 +22,8 @@ fn main() {
     let data_codewords = combine_data(&encoded_data, &ec_codewords);
 
     let code_matrix = CodeMatrix::with_data(&data_codewords);
-
-    // let mask_pattern = MaskPattern::pattern_for(code_matrix);
+    let data_mask = DataMask::best_pattern(&code_matrix);
+    let masked_matrix = code_matrix.with_data_mask(&data_mask);
 }
 
 fn encode_data(data: &str) -> Vec<u8> {
