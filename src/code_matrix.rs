@@ -123,6 +123,29 @@ impl CodeMatrix {
     pub fn write(&mut self, y: usize, x: usize, value: u8) {
         self.data[y][x] = value;
     }
+
+    pub fn with_format_info(&self, format_info: u16) -> Self {
+        let mut matrix = self.clone();
+
+        matrix.write(1, 8, ((format_info >> 0) & 1) as u8);
+        matrix.write(2, 8, ((format_info >> 1) & 1) as u8);
+        matrix.write(3, 8, ((format_info >> 2) & 1) as u8);
+        matrix.write(4, 8, ((format_info >> 3) & 1) as u8);
+        matrix.write(5, 8, ((format_info >> 4) & 1) as u8);
+        matrix.write(6, 8, ((format_info >> 5) & 1) as u8);
+        matrix.write(7, 8, ((format_info >> 6) & 1) as u8);
+        matrix.write(8, 8, ((format_info >> 7) & 1) as u8);
+
+        matrix.write(8, 7, ((format_info >> 8) & 1) as u8);
+        matrix.write(8, 6, ((format_info >> 9) & 1) as u8);
+        matrix.write(8, 5, ((format_info >> 10) & 1) as u8);
+        matrix.write(8, 4, ((format_info >> 11) & 1) as u8);
+        matrix.write(8, 3, ((format_info >> 12) & 1) as u8);
+        matrix.write(8, 2, ((format_info >> 13) & 1) as u8);
+        matrix.write(8, 1, ((format_info >> 14) & 1) as u8);
+
+        matrix
+    }
 }
 
 impl PatternScoring for CodeMatrix {
@@ -141,6 +164,31 @@ mod tests {
     use crate::bit_block::UpwardsBlock;
 
     #[test]
+    fn test_write_format_info_m4l() {
+        let mut matrix = CodeMatrix::new();
+
+        // Write format information for M4-L
+        matrix.write_format_info(0b101000010011001);
+
+        // Test individual bits are written to correct positions
+        assert_eq!(matrix.read(1, 8), 1); // Bit 0
+        assert_eq!(matrix.read(2, 8), 0); // Bit 1
+        assert_eq!(matrix.read(3, 8), 0); // Bit 2
+        assert_eq!(matrix.read(4, 8), 1); // Bit 3
+        assert_eq!(matrix.read(5, 8), 1); // Bit 4
+        assert_eq!(matrix.read(6, 8), 0); // Bit 5
+        assert_eq!(matrix.read(7, 8), 0); // Bit 6
+        assert_eq!(matrix.read(8, 8), 1); // Bit 7
+        assert_eq!(matrix.read(8, 7), 0); // Bit 8
+        assert_eq!(matrix.read(8, 6), 0); // Bit 9
+        assert_eq!(matrix.read(8, 5), 0); // Bit 10
+        assert_eq!(matrix.read(8, 4), 0); // Bit 11
+        assert_eq!(matrix.read(8, 3), 1); // Bit 12
+        assert_eq!(matrix.read(8, 2), 0); // Bit 13
+        assert_eq!(matrix.read(8, 1), 1); // Bit 14 (most significant)
+    }
+
+    #[test]
     fn test_with_data_mask() {
         let mut matrix = CodeMatrix::new();
 
@@ -153,7 +201,7 @@ mod tests {
         matrix.write(15, 15, 1);
 
         // Create a test mask pattern with known values
-        let mut pattern = DataMask::new();
+        let mut pattern = DataMask::new(9);
 
         // Set corresponding test values in the mask pattern
         pattern.write(9, 9, 1);

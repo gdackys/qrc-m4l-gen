@@ -3,6 +3,7 @@ mod bit_block;
 mod code_matrix;
 mod data_mask;
 mod error_correction;
+mod format_info;
 mod gf_256;
 mod pattern_scoring;
 
@@ -20,10 +21,11 @@ fn main() {
     let encoded_data = encode_data(data);
     let ec_codewords = gen_ec_codewords(&encoded_data, &gf_256);
     let data_codewords = combine_data(&encoded_data, &ec_codewords);
-
     let code_matrix = CodeMatrix::with_data(&data_codewords);
     let data_mask = DataMask::best_pattern(&code_matrix);
     let masked_matrix = code_matrix.with_data_mask(&data_mask);
+    let format_info = get_format_info(&data_mask);
+    let full_matrix = masked_matrix.with_format_info(format_info);
 }
 
 fn encode_data(data: &str) -> Vec<u8> {
@@ -36,4 +38,8 @@ fn gen_ec_codewords(input: &[u8], gf_256: &GF256) -> Vec<u8> {
 
 fn combine_data(encoded_data: &[u8], ec_codewords: &[u8]) -> Vec<u8> {
     [encoded_data, ec_codewords].concat()
+}
+
+fn get_format_info(data_mask: &DataMask) -> u16 {
+    format_info::encode(data_mask.pattern_ref())
 }

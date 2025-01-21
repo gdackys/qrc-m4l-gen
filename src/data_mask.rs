@@ -4,9 +4,14 @@ use crate::pattern_scoring::PatternScoring;
 #[derive(Debug)]
 pub struct DataMask {
     data: [[u8; 17]; 17],
+    pattern_reference: u8,
 }
 
 impl DataMask {
+    pub fn pattern_ref(&self) -> u8 {
+        self.pattern_reference
+    }
+
     pub fn best_pattern(matrix: &CodeMatrix) -> DataMask {
         let patterns = [
             Self::pattern_00(),
@@ -21,14 +26,15 @@ impl DataMask {
             .unwrap()
     }
 
-    pub fn new() -> Self {
+    pub fn new(pattern_reference: u8) -> Self {
         DataMask {
             data: [[0; 17]; 17],
+            pattern_reference,
         }
     }
 
     pub fn pattern_00() -> Self {
-        let mut mask = Self::new();
+        let mut mask = Self::new(0);
 
         for i in 0..17 {
             for j in 0..17 {
@@ -42,7 +48,7 @@ impl DataMask {
     }
 
     pub fn pattern_01() -> Self {
-        let mut mask = Self::new();
+        let mut mask = Self::new(1);
 
         for i in 0..17 {
             for j in 0..17 {
@@ -56,7 +62,7 @@ impl DataMask {
     }
 
     pub fn pattern_10() -> Self {
-        let mut mask = Self::new();
+        let mut mask = Self::new(2);
 
         for i in 0..17 {
             for j in 0..17 {
@@ -70,7 +76,7 @@ impl DataMask {
     }
 
     pub fn pattern_11() -> Self {
-        let mut mask = Self::new();
+        let mut mask = Self::new(3);
 
         for i in 0..17 {
             for j in 0..17 {
