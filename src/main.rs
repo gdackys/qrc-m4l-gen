@@ -13,12 +13,20 @@ fn main() {
     let data = "AC-42";
 
     let gf_256 = GF256::new();
-    let encoded_data = alphanumeric_mode::encode(data).unwrap();
-    let ec_codewords = ec_codewords(&encoded_data, &gf_256);
-    let data_codewords = [encoded_data, ec_codewords].concat();
-    let _code_matrix = code_matrix::with_data(&data_codewords);
+    let encoded_data = encode_data(data);
+    let ec_codewords = gen_ec_codewords(&encoded_data, &gf_256);
+    let data_codewords = combine_data(&encoded_data, &ec_codewords);
+    let _code_matrix = code_matrix::CodeMatrix::with_data(&data_codewords);
 }
 
-fn ec_codewords(input: &[u8], gf_256: &GF256) -> Vec<u8> {
+fn encode_data(data: &str) -> Vec<u8> {
+    alphanumeric_mode::encode(data).unwrap()
+}
+
+fn gen_ec_codewords(input: &[u8], gf_256: &GF256) -> Vec<u8> {
     error_correction::calculate_codewords(input, &GEN_COEFFS, gf_256, ERR_CORRECTION_CODEWORDS)
+}
+
+fn combine_data(encoded_data: &[u8], ec_codewords: &[u8]) -> Vec<u8> {
+    [encoded_data, ec_codewords].concat()
 }

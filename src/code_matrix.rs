@@ -4,12 +4,6 @@ pub struct CodeMatrix {
     data: [[u8; 17]; 17],
 }
 
-pub fn with_data(data: &[u8]) -> CodeMatrix {
-    let mut matrix = CodeMatrix::new();
-    matrix.place_data(data);
-    matrix
-}
-
 impl CodeMatrix {
     pub fn new() -> Self {
         Self {
@@ -33,6 +27,12 @@ impl CodeMatrix {
                 [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
             ],
         }
+    }
+
+    pub fn with_data(data: &[u8]) -> Self {
+        let mut matrix = Self::new();
+        matrix.place_data(data);
+        matrix
     }
 
     pub fn place_data(&mut self, data: &[u8]) {
