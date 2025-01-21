@@ -35,12 +35,18 @@ impl CodeMatrix {
         ]
     }
 
+    pub fn empty() -> Self {
+        let mut matrix = Self::new();
+        matrix.init();
+        matrix
+    }
+
     pub fn with_data_mask(&self, data_mask: &DataMask) -> Self {
         let mut matrix = self.clone();
 
-        for i in 0..17 {
-            for j in 0..17 {
-                if i > 8 && j > 8 {
+        for i in 1..17 {
+            for j in 1..17 {
+                if i > 8 || j > 8 {
                     matrix.data[i][j] ^= data_mask.read(i, j);
                 }
             }
@@ -116,7 +122,7 @@ impl CodeMatrix {
         self.write(y, x, other.read(y, x));
     }
 
-    fn read(&self, y: usize, x: usize) -> u8 {
+    pub fn read(&self, y: usize, x: usize) -> u8 {
         self.data[y][x]
     }
 
@@ -168,7 +174,7 @@ mod tests {
         let mut matrix = CodeMatrix::new();
 
         // Write format information for M4-L
-        matrix.write_format_info(0b101000010011001);
+        matrix.with_format_info(0b101000010011001);
 
         // Test individual bits are written to correct positions
         assert_eq!(matrix.read(1, 8), 1); // Bit 0
