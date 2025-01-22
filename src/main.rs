@@ -1,51 +1,55 @@
 mod alphanumeric_mode;
 mod bit_block;
 mod code_matrix;
+mod data_codewords;
 mod data_mask;
 mod error_correction;
 mod format_info;
 mod gf_256;
 mod pattern_scoring;
+mod symbol_matrix;
 
-use code_matrix::CodeMatrix;
-use data_mask::DataMask;
-use gf_256::GF256;
+use clap::Parser;
+use regex::Regex;
 
-const ERR_CORRECTION_CODEWORDS: usize = 8;
-const GEN_COEFFS: [u8; 9] = [0x01, 0xff, 0x0b, 0x51, 0x36, 0xef, 0xad, 0xc8, 0x18];
+#[derive(Parser, Debug)]
+#[command(
+    author = "Ged Dackys <ged@onegood.dev>",
+    version = "0.1",
+    about = "Generates a M4-L version micro QR code from an input string encoded in alphanumeric mode. Outputs 210x210 pixels image file."
+)]
+struct Args {
+    /// Input string (max 21 chars, alphanumeric character set only)
+    #[arg(short, long, value_parser = validate_input)]
+    input: String,
+
+    /// Output file name (e.g. my_qrc.png)
+    #[arg(short, long)]
+    output: String,
+}
 
 fn main() {
-    // TODO: read the inputs from args
-    let data = "HELLO WORLD";
+    let args = Args::parse();
 
-    // TODO: validate inputs
+    let input = args.input;
+    let output = args.output;
 
-    let gf_256 = GF256::new();
-    let encoded_data = encode_data(data);
-    let ec_codewords = gen_ec_codewords(&encoded_data, &gf_256);
-    let data_codewords = combine_data(&encoded_data, &ec_codewords);
-
-    let data_matrix = CodeMatrix::with_data(&data_codewords);
-    let data_mask = DataMask::best_pattern(&data_matrix);
-    let masked_matrix = data_matrix.with_data_mask(&data_mask);
-    let format_info = get_format_info(&data_mask);
-    let _final_matrix = masked_matrix.with_format_info(format_info);
+    let data_codewords = data_codewords::generate(&input);
+    let symbol_matrix = symbol_matrix::generate(&data_codewords);
 
     // TODO: write to an image file
 }
 
-fn encode_data(data: &str) -> Vec<u8> {
-    alphanumeric_mode::encode(data).unwrap()
-}
+fn validate_input(s: &str) -> Result<String, String> {
+    if s.len() > 21 {
+        return Err(String::from("Input must not exceed 21 characters"));
+    }
 
-fn gen_ec_codewords(input: &[u8], gf_256: &GF256) -> Vec<u8> {
-    error_correction::calculate_codewords(input, &GEN_COEFFS, gf_256, ERR_CORRECTION_CODEWORDS)
-}
+    let re = Regex::new(r"^[0-9A-Z $%*+\-./:]*$").unwrap();
 
-fn combine_data(encoded_data: &[u8], ec_codewords: &[u8]) -> Vec<u8> {
-    [encoded_data, ec_codewords].concat()
-}
+    if !re.is_match(s) {
+        return Err(String::from("Input contains invalid characters. Only alphanumeric (0-9, A-Z) and special characters ( $%*+-./:) are allowed"));
+    }
 
-fn get_format_info(data_mask: &DataMask) -> u16 {
-    format_info::encode(data_mask.pattern_ref())
+    Ok(s.to_string())
 }
