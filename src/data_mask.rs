@@ -1,7 +1,6 @@
 use crate::code_matrix::CodeMatrix;
 use crate::pattern_scoring::PatternScoring;
 
-#[derive(Debug)]
 pub struct DataMask {
     data: [[u8; 17]; 17],
     pattern_reference: u8,

@@ -35,12 +35,6 @@ impl CodeMatrix {
         ]
     }
 
-    pub fn empty() -> Self {
-        let mut matrix = Self::new();
-        matrix.init();
-        matrix
-    }
-
     pub fn with_data_mask(&self, data_mask: &DataMask) -> Self {
         let mut matrix = self.clone();
 
@@ -171,10 +165,10 @@ mod tests {
 
     #[test]
     fn test_write_format_info_m4l() {
-        let mut matrix = CodeMatrix::new();
+        let blank_matrix = CodeMatrix::new();
 
         // Write format information for M4-L
-        matrix.with_format_info(0b101000010011001);
+        let matrix = blank_matrix.with_format_info(0b101000010011001);
 
         // Test individual bits are written to correct positions
         assert_eq!(matrix.read(1, 8), 1); // Bit 0
